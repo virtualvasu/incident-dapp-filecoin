@@ -1,16 +1,19 @@
 import { useState } from 'react';
 import { create } from '@web3-storage/w3up-client';
+import type { StorachaCredentials } from './StorachaConnection';
 
 interface StorachaPDFUploadProps {
   pdfBytes: Uint8Array;
   fileName?: string;
   onUploadComplete: (hash: string, fileURI: string) => void;
+  storachaCredentials: StorachaCredentials;
 }
 
 export default function StorachaPDFUpload({
   pdfBytes,
   fileName = 'incident_report.pdf',
-  onUploadComplete
+  onUploadComplete,
+  storachaCredentials
 }: StorachaPDFUploadProps) {
   const [uploadHash, setUploadHash] = useState('');
   const [isUploading, setIsUploading] = useState(false);
@@ -21,7 +24,7 @@ export default function StorachaPDFUpload({
     setProgress(0);
 
     try {
-      const pdfFile = new File([pdfBytes], fileName, {
+      const pdfFile = new File([new Uint8Array(pdfBytes)], fileName, {
         type: 'application/pdf',
       });
 
@@ -30,8 +33,8 @@ export default function StorachaPDFUpload({
       }, 100);
 
       const client = await create();
-      await client.login('virtualvasu624@gmail.com');
-      await client.setCurrentSpace('did:key:z6Mku19GXrPFP2CyTCSPUaMt3mwdyXuZVurpYgvaqUrn6oFz');
+      await client.login(storachaCredentials.email as `${string}@${string}`);
+      await client.setCurrentSpace(storachaCredentials.spaceDID as `did:${string}:${string}`);
 
       const cid = await client.uploadFile(pdfFile);
       const url = `https://w3s.link/ipfs/${cid}`;

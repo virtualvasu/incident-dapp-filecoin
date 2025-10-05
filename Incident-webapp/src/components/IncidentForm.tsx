@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { generateIncidentPDF } from '../lib/generateIncidentPDF';
 import StorachaPDFUpload from './StorachaPDFUpload';
+import StorachaConnection from './StorachaConnection';
 import ContractHandler from './ContractHandler';
+import type { StorachaCredentials } from './StorachaConnection';
 
 export default function IncidentFormWithPDF() {
     const [location, setLocation] = useState('');
@@ -10,6 +12,18 @@ export default function IncidentFormWithPDF() {
     const [isElderlyInvolved, setIsElderlyInvolved] = useState(false);
     const [pdfBytes, setPdfBytes] = useState<Uint8Array | null>(null);
     const [storachaCID, setStorachaCID] = useState('');
+    const [storachaCredentials, setStorachaCredentials] = useState<StorachaCredentials | null>(null);
+    const [isStorachaConnected, setIsStorachaConnected] = useState(false);
+
+    const handleStorachaConnect = (credentials: StorachaCredentials) => {
+        if (credentials.email && credentials.spaceDID) {
+            setStorachaCredentials(credentials);
+            setIsStorachaConnected(true);
+        } else {
+            setStorachaCredentials(null);
+            setIsStorachaConnected(false);
+        }
+    };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -30,7 +44,7 @@ export default function IncidentFormWithPDF() {
         setPdfBytes(pdf);
 
         // Optional: Download immediately
-        const blob = new Blob([pdf], { type: 'application/pdf' });
+        const blob = new Blob([new Uint8Array(pdf)], { type: 'application/pdf' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -170,13 +184,21 @@ export default function IncidentFormWithPDF() {
                             <h3 className="text-lg font-semibold text-white">Upload to Storage</h3>
                         </div>
                         <div className="p-6">
-                            <StorachaPDFUpload
-                                pdfBytes={pdfBytes}
-                                onUploadComplete={(cid, url) => {
-                                    console.log('PDF uploaded to Storacha:', cid, url);
-                                    setStorachaCID(cid);
-                                }}
+                            <StorachaConnection
+                                onConnect={handleStorachaConnect}
+                                isConnected={isStorachaConnected}
+                                credentials={storachaCredentials || undefined}
                             />
+                            {isStorachaConnected && storachaCredentials && (
+                                <StorachaPDFUpload
+                                    pdfBytes={pdfBytes}
+                                    storachaCredentials={storachaCredentials}
+                                    onUploadComplete={(cid, url) => {
+                                        console.log('PDF uploaded to Storacha:', cid, url);
+                                        setStorachaCID(cid);
+                                    }}
+                                />
+                            )}
                         </div>
                     </div>
                 )}

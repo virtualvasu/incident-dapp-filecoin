@@ -5,6 +5,7 @@ import PDFGenerationStep from './steps/PDFGenerationStep';
 import StorageUploadStep from './steps/StorageUploadStep';
 import ContractSubmissionStep from './steps/ContractSubmissionStep';
 import SuccessSummaryStep from './steps/SuccessSummaryStep';
+import type { StorachaCredentials } from './StorachaConnection';
 
 export interface IncidentData {
   location: string;
@@ -17,6 +18,7 @@ export interface WizardData {
   incidentData: IncidentData;
   pdfBytes: Uint8Array | null;
   storachaCID: string;
+  storachaCredentials: StorachaCredentials | null;
   contractData: any;
 }
 
@@ -39,6 +41,7 @@ export default function IncidentWizard({ onBackToHome }: { onBackToHome?: () => 
     },
     pdfBytes: null,
     storachaCID: '',
+    storachaCredentials: null,
     contractData: null
   });
 
@@ -122,6 +125,7 @@ export default function IncidentWizard({ onBackToHome }: { onBackToHome?: () => 
                 },
                 pdfBytes: null,
                 storachaCID: '',
+                storachaCredentials: null,
                 contractData: null
               });
             }}
